@@ -7,7 +7,7 @@ set -e
 export HOME=/home/admin
 export PATH=$PATH:$HOME/droid/bin
 export ANDROID_NDK=~/droid/android-ndk
-export TARGET=~/target
+export TARGET=/target
 export PROGRAMS="dropbear dropbearkey dbclient scp"
 
 # Download the latest version of dropbear SSH
