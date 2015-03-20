@@ -1,0 +1,99 @@
+#!/bin/bash
+
+# Bomb out on any errors
+set -e 
+
+# Setup the environment
+export HOME=/home/admin
+export PATH=$PATH:$HOME/droid/bin
+export ANDROID_NDK=~/droid/android-ndk
+export TARGET=~/target
+export PROGRAMS="dropbear dropbearkey dbclient scp"
+
+# Download the latest version of dropbear SSH
+if [ ! -f ~/dropbear-2015.67.tar.bz2 ]; then
+    wget -O ~/dropbear-2015.67.tar.bz2 https://matt.ucc.asn.au/dropbear/dropbear-2015.67.tar.bz2
+fi
+
+#if [ ! -f ~/config.sub ]; then
+#   wget -O config.sub "http://git.savannah.gnu.org/gitweb/?p=config.git;a=blob_plain;f=config.sub;hb=HEAD"
+#fi
+
+#if [ ! -f ~/config.guess ]; then
+#   wget -O config.guess "http://git.savannah.gnu.org/gitweb/?p=config.git;a=blob_plain;f=config.guess;hb=HEAD"
+#fi
+
+for ARCH_NAME in mips arm x86; do
+
+    for BIN_TYPE in nopie pie; do
+
+        # Create the output directory
+        mkdir -p $TARGET/$ARCH_NAME/$BIN_TYPE;
+
+        # Start each build with a fresh source copy
+        cd ~
+        rm -rf ~/dropbear-2015.67
+        tar xjf dropbear-2015.67.tar.bz2
+        cd dropbear-2015.67
+
+	# Apply the new config.guess and config.sub
+	cp ~/config.guess ~/config.sub .
+
+	# Apply the Android patch
+        patch -p1 <~/dropbear-android.patch
+
+        case "$ARCH_NAME" in
+            
+            x86)
+                echo "Compiling for x86"
+                HOST=i686-linux-android
+                TOOLCHAIN=${ANDROID_NDK}/default-x86-toolchain
+                COMPILER=${TOOLCHAIN}/bin/i686-linux-android-gcc
+                STRIP=${TOOLCHAIN}/bin/i686-linux-android-strip
+                SYSROOT=${ANDROID_NDK}/platforms/android-19/arch-x86
+                ;;
+            arm)
+                echo "Compiling for ARM"
+                HOST=arm-linux
+                TOOLCHAIN=${ANDROID_NDK}/default-arm-toolchain
+                COMPILER=${TOOLCHAIN}/bin/arm-linux-androideabi-gcc
+                STRIP=${TOOLCHAIN}/bin/arm-linux-androideabi-strip
+                SYSROOT=${ANDROID_NDK}/platforms/android-19/arch-arm
+                ;;
+            mips)
+                echo "Compiling for MIPS"
+                HOST=mipsel-linux-android
+                TOOLCHAIN=${ANDROID_NDK}/default-mips-toolchain
+                COMPILER=${TOOLCHAIN}/bin/mipsel-linux-android-gcc
+                STRIP=${TOOLCHAIN}/bin/mipsel-linux-android-strip
+                SYSROOT=${ANDROID_NDK}/platforms/android-19/arch-mips
+                ;;
+
+        esac
+
+        export CC="$COMPILER --sysroot=$SYSROOT"
+        
+        if [ $BIN_TYPE == "pie" ]; then
+            export CFLAGS="-g -O2 -pie -fPIE"
+            # Use the default platform target for pie binaries 
+            unset GOOGLE_PLATFORM
+        else 
+            export CFLAGS="-g -O2"
+            export GOOGLE_PLATFORM=9
+        fi
+
+	./configure --host=$HOST --disable-utmp --disable-wtmp --disable-utmpx --disable-zlib --disable-syslog
+	echo "#define USE_DEV_PTMX 1" >> config.h
+
+	make PROGRAMS="$PROGRAMS"
+
+	for PROGRAM in $PROGRAMS; do
+	    $STRIP $PROGRAM
+	done 
+
+        cp $PROGRAMS $TARGET/$ARCH_NAME/$BIN_TYPE/
+
+    done
+
+done
+
