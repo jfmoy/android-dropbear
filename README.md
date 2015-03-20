@@ -15,7 +15,6 @@ $ docker run -v $(pwd):/target jfmoy/android-dropbear
 
 Manual Build
 ----
-```
 $ docker run -i -t -v $(pwd):/target jfmoy/android-dropbear /home/admin/shell
 $ vi ~/build (tweak away)
 $ ~/build
