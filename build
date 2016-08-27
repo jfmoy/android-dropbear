@@ -9,10 +9,11 @@ export PATH=$PATH:$HOME/droid/bin
 export ANDROID_NDK=~/droid/android-ndk
 export TARGET=/target
 export PROGRAMS="dropbear dropbearkey dbclient scp"
+export VERSION=2016.74
 
 # Download the latest version of dropbear SSH
-if [ ! -f ~/dropbear-2015.67.tar.bz2 ]; then
-    wget -O ~/dropbear-2015.67.tar.bz2 https://matt.ucc.asn.au/dropbear/dropbear-2015.67.tar.bz2
+if [ ! -f ~/dropbear-$VERSION.tar.bz2 ]; then
+    wget -O ~/dropbear-$VERSION.tar.bz2 https://matt.ucc.asn.au/dropbear/dropbear-$VERSION.tar.bz2
 fi
 
 #if [ ! -f ~/config.sub ]; then
@@ -32,9 +33,9 @@ for ARCH_NAME in mips arm x86; do
 
         # Start each build with a fresh source copy
         cd ~
-        rm -rf ~/dropbear-2015.67
-        tar xjf dropbear-2015.67.tar.bz2
-        cd dropbear-2015.67
+        rm -rf ~/dropbear-$VERSION
+        tar xjf dropbear-$VERSION.tar.bz2
+        cd dropbear-$VERSION
 
 	# Apply the new config.guess and config.sub
 	cp ~/config.guess ~/config.sub .
