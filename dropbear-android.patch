@@ -41,15 +41,6 @@ diff -rup dropbear-2013.58.orig/options.h dropbear-2013.58/options.h
  
  /* The MOTD file path */
  #ifndef MOTD_FILENAME
-@@ -174,7 +174,7 @@ much traffic. */
-  * PAM challenge/response.
-  * You can't enable both PASSWORD and PAM. */
- 
--#define ENABLE_SVR_PASSWORD_AUTH
-+#undef ENABLE_SVR_PASSWORD_AUTH
- /* PAM requires ./configure --enable-pam */
- //#define ENABLE_SVR_PAM_AUTH
- #define ENABLE_SVR_PUBKEY_AUTH
 @@ -241,7 +241,7 @@ much traffic. */
  /* The default file to store the daemon's process ID, for shutdown
     scripts etc. This can be overridden with the -P flag */
@@ -68,18 +59,6 @@ diff -rup dropbear-2013.58.orig/options.h dropbear-2013.58/options.h
  
  /* Some other defines (that mostly should be left alone) are defined
   * in sysoptions.h */
-diff -rup dropbear-2013.58.orig/scp.c dropbear-2013.58/scp.c
---- dropbear-2013.58.orig/scp.c	2013-07-03 14:57:58.000000000 +0200
-+++ dropbear-2013.58/scp.c	2013-07-03 14:58:43.000000000 +0200
-@@ -992,7 +992,7 @@ sink(int argc, char **argv)
- 			continue;
- 		}
- 		omode = mode;
--		mode |= S_IWRITE;
-+		mode |= S_IWUSR;
- 		if ((ofd = open(np, O_WRONLY|O_CREAT, mode)) < 0) {
- bad:			run_err("%s: %s", np, strerror(errno));
- 			continue;
 diff -rup dropbear-2013.58.orig/svr-auth.c dropbear-2013.58/svr-auth.c
 --- dropbear-2013.58.orig/svr-auth.c	2013-07-03 14:57:58.000000000 +0200
 +++ dropbear-2013.58/svr-auth.c	2013-07-03 14:59:46.000000000 +0200
